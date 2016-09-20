@@ -1,3 +1,5 @@
+#!/bin/sh
+
 # Converts sph to riff format using sph2pipe
 # Extracts mfcc using HCopy
 # Author: Rupak Vignesh
