@@ -10,7 +10,7 @@ SPH_DIR=/Users/RupakVignesh/Documents/sph2pipe_v2.5
 
 TRAIN_DIR=$TIMIT_DIR/train
 TEST_DIR=$TIMIT_DIR/test
-HMM=/Users/RupakVignesh/Desktop/7100/LyricAlignment/code/Timit_Acoustic_Model
+HMM=/Users/RupakVignesh/Desktop/7100/Lyrics-to-Audio-Alignment/Timit_Acoustic_Model
 
 echo "Copying wav and extracting features"
 
@@ -41,9 +41,12 @@ paste $HMM/lists/wavlist_formatted.train $HMM/lists/mfclist_formatted.train > $H
 
 #Extracting MFCCs
 
-HCopy -C $HMM/configs-hcopy -S $HMM/lists/map_train.scp
-#HCopy -C $HMM/configs-hcopy -S $HMM/lists/map_test.scp
+#Splitting files for parallel processing
+split -l $((`wc -l < $HMM/lists/map_train.scp`/4)) $HMM/lists/map_train.scp $HMM/lists/sublist.
+ls $HMM/lists/sublist.* > $HMM/lists/sublists.train
 
+less $HMM/lists/sublists.train | parallel -v -j4 "HCopy -C $HMM/Configs/config-hcopy -S {}"
+#HCopy -C $HMM/Configs/config-hcopy -S $HMM/lists/map_test.scp
 
 
 
