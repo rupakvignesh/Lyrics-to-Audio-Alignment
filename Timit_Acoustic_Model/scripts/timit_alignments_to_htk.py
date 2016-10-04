@@ -1,3 +1,4 @@
+#!/usr/bin/python
 # Converts the alignment file in timit (.phn)
 # to htk format (.lab).
 # Timit alignments: [start_sample_ind end_sample_ind phone_label]
@@ -53,7 +54,7 @@ def convert_labels(database):
                     lab_file.write(str(start_time) + " " + str(end_time) + " " + phn_label + "\n")
             lab_file.close()
 
-convert_labels("train")
-#convert_labels("test")
+#convert_labels("train")
+convert_labels("test")
 
 
