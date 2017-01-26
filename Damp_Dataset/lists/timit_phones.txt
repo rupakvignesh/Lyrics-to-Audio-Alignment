@@ -1,0 +1,61 @@
+~h "b" b
+~h "d" d 
+~h "f" f
+~h "g" g
+~h "k" k
+~h "l" l 
+~h "m" m
+~h "n" n 
+~h "p" p
+~h "q" 
+~h "r" r
+~h "s" s
+~h "t" t
+~h "v" v
+~h "w" w
+~h "y" y
+~h "z" z
+~h "aa" aa1
+~h "ae" ae1
+~h "ah" ah1
+~h "ao" ao1 
+~h "aw" aw1
+~h "ax" ax
+~h "ay" ay1
+~h "ch" ch
+~h "dh" dh
+~h "dx" d
+~h "eh" eh
+~h "el" 
+~h "em" 
+~h "en"
+~h "er" er1
+~h "ey" ey1
+~h "hh" hh
+~h "hv" 
+~h "ih" ih1
+~h "ix" 
+~h "iy" iy1
+~h "jh" jh
+~h "ng" ng
+~h "nx" 
+~h "ow" ow1
+~h "oy" oy1
+~h "sh" sh
+~h "th" th
+~h "uh" uh1
+~h "uw" uw
+~h "ux" 
+~h "zh" zh
+~h "ax-h" 
+~h "axr" 
+~h "bcl"
+~h "dcl"
+~h "eng" 
+~h "epi" 
+~h "gcl"
+~h "kcl"
+~h "pau" pau
+~h "pcl"
+~h "sil" sil
+~h "tcl"
