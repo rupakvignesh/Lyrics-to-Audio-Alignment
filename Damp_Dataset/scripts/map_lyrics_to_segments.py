@@ -2,7 +2,6 @@ import sys, commands
 import numpy as np
 import os.path as path
 
-
 """
 likelihood = commands.getstatusoutput('HVite -T 1 -a -m -o MN -H hmm_with_er/hmm7/hmmdefs -I segments.mlf lists/dict lists/phonelist mfc_train/dr1_fcjf0_sa1.mfc | tail -1 | rev | cut -d " " -f4 | rev')[1]
 """
@@ -18,6 +17,7 @@ def get_lyrics(wav_id, wav2lyric):
         lyric_lines = [lines.rstrip() for lines in F]
     F.close()
     lyric_lines = filter(None, lyric_lines)
+    lyric_lines.insert(0,'pau')
     return lyric_lines
 
 def get_likelihood(segment_name):
@@ -54,12 +54,12 @@ def main():
 
     # Open wavlist and readlines
     with open(sys.argv[1],'r') as F:
-        wavlist = [lines.rstrip() for lines in F]
+        wavlist = [lines.rstrip() for lines in F]           # 360_xxxx.wav
     F.close()
 
     # Open wav segments list and readlines
     with open(sys.argv[2],'r') as F:
-        wav_segment_list = [lines.rstrip() for lines in F]
+        wav_segment_list = [lines.rstrip() for lines in F]  # 360_xxxx-1.wav, 360_xxxx-2.wav, etc
     F.close()
 
     # For each wavfile, open each of its segments
@@ -69,28 +69,26 @@ def main():
         #get wav segments
         wav_segments = [wav_seg for wav_seg in wav_segment_list if wav_seg.startswith(wav_id)]
         #For each segment find set of lyric lines from HVite
-        l1 = 0
-        l2 = 1
+        l1 = 0          # lyric starting line number
+        l2 = 1          # lyric ending line number
         for j in range(len(wav_segments)):
             #Make mlf for each line
             segment_name = path.splitext(wav_segments[i])[0]
-
             prev_likelihood = -10000
             lyric_segment = []
-            lyric_segment.append(lyrics[l1:l2])
+            lyric_segment = lyrics[l1:l2]
             make_mlf(segment_name, lyric_segment)
             likelihood = get_likelihood(segment_name)
             while (likelihood>prev_likelihood):
+                prev_likelihood = likelihood
                 l2 += 1
-                lyric_segment.append(lyric_segment[l1:l2])
+                lyric_segment = lyrics[l1:l2]
                 make_mlf(segment_name, lyric_segment)
                 likelihood = get_likelihood(segment_name)
+            lyric_segment = lyrics[l1:l2-1]
             make_mlf(segment_name, lyric_segment)
             l1 = l2
             l2 += 1
-
-
-
 
 
 if __name__ == "__main__":
