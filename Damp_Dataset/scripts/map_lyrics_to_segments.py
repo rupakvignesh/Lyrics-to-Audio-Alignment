@@ -17,31 +17,33 @@ def get_lyrics(wav_id, wav2lyric):
         lyric_lines = [lines.rstrip() for lines in F]
     F.close()
     lyric_lines = filter(None, lyric_lines)
-    lyric_lines.insert(0,'pau')
     return lyric_lines
 
 def get_likelihood(segment_name):
-    return commands.getstatusoutput('HVite -T 1 -a -m -o MN -H hmm_with_er/hmm7/hmmdefs -I Audio_segments/'+segment_name+'.mlf lists/dict lists/phonelist mfc_train/dr1_fcjf0_sa1.mfc | tail -1 | rev | cut -d " " -f4 | rev')[1]
+    return commands.getstatusoutput('HVite -T 1 -a -m -o MN -H timit_4s_4m/hmmdefs -I Audio_test_segmentation/'+segment_name+'.mlf words_to_phone_dict lists/phonelist '+'Audio_test_segmentation/'+segment_name+'.mfc | tail -1 | rev | cut -d " " -f4 | rev')[1]
 
 def make_mlf(wav_segment_name,lyric_lines):
     """
     Write word by word in a MLF file.
     """
-    words = str.split(lyric_line)
-    F = open('Audio_segments/'+wav_segment_name+'.mlf','w')
-    F.write('#!MLF!#')
-    F.write('"*/'+wav_segment_name+'.mlf"\n')
+    words = [str.split(i) for i in lyric_lines]
+    words = [j for i in range(len(words)) for j in words[i]]
+    words = [s.replace(',','') for s in words]
+    words = [s.replace('.','') for s in words]
+    F = open('Audio_test_segmentation/'+wav_segment_name+'.mlf','w')
+    F.write('#!MLF!#\n')
+    F.write('"*/'+wav_segment_name+'.lab"\n')
     F.write("pau\n")
     for i in range(len(words)):
         F.write(words[i]+'\n')
         F.write("pau\n")
-    F.write(".")
+    F.write(".\n")
     F.close()
 
 
 def main():
     # Create a wav2lyric dictionary
-    with open('lists/train_lyricid_songid_map.txt','r') as F:
+    with open('lists/lyricid_songid_map.txt','r') as F:
         lyricid_to_song = [lines.rstrip() for lines in F]
     F.close()
     lyricid_to_song_parsed = []
@@ -73,12 +75,15 @@ def main():
         l2 = 1          # lyric ending line number
         for j in range(len(wav_segments)):
             #Make mlf for each line
-            segment_name = path.splitext(wav_segments[i])[0]
-            prev_likelihood = -10000
-            lyric_segment = []
+            segment_name = path.splitext(wav_segments[j])[0]
+            make_mlf(segment_name, [])      # initial pau
+            prev_likelihood = get_likelihood(segment_name)
             lyric_segment = lyrics[l1:l2]
             make_mlf(segment_name, lyric_segment)
             likelihood = get_likelihood(segment_name)
+            print (prev_likelihood, likelihood)
+            if (prev_likelihood>likelihood):
+                continue
             while (likelihood>prev_likelihood):
                 prev_likelihood = likelihood
                 l2 += 1
@@ -87,8 +92,7 @@ def main():
                 likelihood = get_likelihood(segment_name)
             lyric_segment = lyrics[l1:l2-1]
             make_mlf(segment_name, lyric_segment)
-            l1 = l2
-            l2 += 1
+            l1 = l2-1
 
 
 if __name__ == "__main__":
