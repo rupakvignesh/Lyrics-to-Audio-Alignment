@@ -22,6 +22,8 @@ for filename in os.listdir(args.in_dir):
 
     parts = fname.split('-')
     assert len(parts) == 5
+    assert parts[1] == 'clip'
+    assert parts[2] == 'label'
     if parts[0] not in name_dict:
         name_dict[parts[0]] = []
     name_dict[parts[0]].append({'filename': filename,
@@ -39,7 +41,7 @@ for name in name_dict.keys():
         seglines = [line.strip() for line in open(
             op.join(args.in_dir, segment['filename']), 'r').readlines()]
         for line in seglines:
-            start, end, lyric = line.split()
+            start, end, lyric, likelihood = line.split()
             outfile.write('{} {} {}\n'.format(int(start) + curr_offset,
                                               int(end) + curr_offset, lyric))
         curr_offset = int(end) + curr_offset
