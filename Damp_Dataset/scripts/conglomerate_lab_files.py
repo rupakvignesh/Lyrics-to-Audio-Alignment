@@ -21,13 +21,13 @@ for filename in os.listdir(args.in_dir):
         continue
 
     parts = fname.split('-')
-    assert len(parts) == 3
+    assert len(parts) == 5
     if parts[0] not in name_dict:
         name_dict[parts[0]] = []
     name_dict[parts[0]].append({'filename': filename,
                                 'basename': parts[0],
-                                'segment_num': parts[1],
-                                'label': parts[2]})
+                                'segment_num': parts[2],
+                                'label': parts[4]})
 
 for name in name_dict.keys():
     print('writing %s'%(op.join(args.out_dir, name + '.lab')))
