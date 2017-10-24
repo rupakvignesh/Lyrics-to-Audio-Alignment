@@ -31,18 +31,36 @@ for filename in os.listdir(args.in_dir):
                                 'segment_num': parts[2],
                                 'label': parts[4]})
 
+line_dict = {}
 for name in name_dict.keys():
-    print('writing %s'%(op.join(args.out_dir, name + '.lab')))
-    outfile = open(op.join(args.out_dir, name + '.lab'), 'w')
+    line_dict[name] = []
     name_dict[name].sort(key=lambda x: x['segment_num'])
     curr_offset = 0
     for segment in name_dict[name]:
         print('processing segment %d'%int(segment['segment_num']))
         seglines = [line.strip() for line in open(
             op.join(args.in_dir, segment['filename']), 'r').readlines()]
+        prev_lyric, prev_start = '', ''
         for line in seglines:
             start, end, lyric, likelihood = line.split()
-            outfile.write('{} {} {}\n'.format(int(start) + curr_offset,
-                                              int(end) + curr_offset, lyric))
+            line_dict[name].append((int(start) + curr_offset,
+                                    int(end) + curr_offset, lyric))
         curr_offset = int(end) + curr_offset
+
+for name in line_dict.keys():
+    print('writing %s'%(op.join(args.out_dir, name + '.lab')))
+    outfile = open(op.join(args.out_dir, name + '.lab'), 'w')
+    i = 0
+    while i < len(line_dict[name]):
+        start, end, lyric = line_dict[name][i]
+        if lyric == 'pau':
+            while lyric == 'pau':
+                i += 1
+                _, _, lyric = line_dict[name][i]
+            i -= 1
+            _, end, lyric = line_dict[name][i]
+        outfile.write('{} {} {}\n'.format(int(start), int(end), 'pau'))
+        i += 1
     outfile.close()
+
+
