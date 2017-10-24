@@ -17,7 +17,7 @@ name_dict = {}
 for filename in os.listdir(args.in_dir):
     print('sorting {}'.format(filename))
     fname, ext = filename.split('.')
-    if ext != '.lab':
+    if ext != 'lab':
         continue
 
     parts = fname.split('-')
