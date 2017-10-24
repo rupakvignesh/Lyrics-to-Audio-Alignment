@@ -16,7 +16,11 @@ args = parser.parse_args()
 name_dict = {}
 for filename in os.listdir(args.in_dir):
     print('sorting {}'.format(filename))
-    parts = filename.split('.')[0].split('-')
+    fname, ext = filename.split('.')
+    if ext != '.lab':
+        continue
+
+    parts = fname.split('-')
     assert len(parts) == 3
     if parts[0] not in name_dict:
         name_dict[parts[0]] = []
