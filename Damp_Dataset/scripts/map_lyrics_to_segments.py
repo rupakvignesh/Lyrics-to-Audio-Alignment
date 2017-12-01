@@ -1,10 +1,13 @@
 import sys, commands
 import numpy as np
 import os.path as path
-
+import scipy.io.wavfile as wave
+import pdb
 """
 likelihood = commands.getstatusoutput('HVite -T 1 -a -m -o MN -H hmm_with_er/hmm7/hmmdefs -I segments.mlf lists/dict lists/phonelist mfc_train/dr1_fcjf0_sa1.mfc | tail -1 | rev | cut -d " " -f4 | rev')[1]
 """
+
+VOC_THRES = -2.5
 def get_lyrics(wav_id, wav2lyric):
     """
     get lyric_id from wav2lyric dict and
@@ -20,16 +23,17 @@ def get_lyrics(wav_id, wav2lyric):
     return lyric_lines
 
 def get_likelihood(segment_name):
-    return commands.getstatusoutput('HVite -T 1 -a -m -o MN -H timit_4s_4m/hmmdefs -I Audio_test_segmentation/'+segment_name+'.mlf words_to_phone_dict lists/phonelist '+'Audio_test_segmentation/'+segment_name+'.mfc | tail -1 | rev | cut -d " " -f4 | rev')[1]
-
+    likelihood = commands.getstatusoutput('HVite -t 250.0 150.0 10000.0 -T 1 -a -m -o MN -H hmm_with_er/hmm5/hmmdefs -I Audio_test_segmentation/'+segment_name+'.mlf words_to_phone_dict lists/phonelist '+'Audio_test_segmentation/'+segment_name+'.mfc | tail -1 | rev | cut -d " " -f4 | rev')[1]
+    commands.getstatusoutput("rm Audio_test_segmentation/"+segment_name+".rec")
+    return likelihood
 def make_mlf(wav_segment_name,lyric_lines):
     """
     Write word by word in a MLF file.
     """
     words = [str.split(i) for i in lyric_lines]
     words = [j for i in range(len(words)) for j in words[i]]
-    words = [s.replace(',','') for s in words]
-    words = [s.replace('.','') for s in words]
+    for i in range(len(words)):
+        words[i] = ''.join(e for e in words[i] if e.isalpha())
     F = open('Audio_test_segmentation/'+wav_segment_name+'.mlf','w')
     F.write('#!MLF!#\n')
     F.write('"*/'+wav_segment_name+'.lab"\n')
@@ -39,6 +43,16 @@ def make_mlf(wav_segment_name,lyric_lines):
         F.write("pau\n")
     F.write(".\n")
     F.close()
+
+def classify_silence(segment_name):
+    [fs,x] = wave.read('Audio_test_segmentation/'+segment_name+'.wav')
+    x = x/(2.0**16)
+    ms = sum([a**2 for a in x])/len(x)
+    rms_db = np.log10(pow(ms, 0.5))
+    if (rms_db > VOC_THRES): #Not Silence
+        return 0
+    else:
+        return 1
 
 
 def main():
@@ -77,22 +91,30 @@ def main():
             #Make mlf for each line
             segment_name = path.splitext(wav_segments[j])[0]
             make_mlf(segment_name, [])      # initial pau
-            prev_likelihood = get_likelihood(segment_name)
+            prev_likelihood = float(get_likelihood(segment_name))
+            if classify_silence(segment_name):
+            #    print(segment_name)
+                continue
             lyric_segment = lyrics[l1:l2]
             make_mlf(segment_name, lyric_segment)
             likelihood = get_likelihood(segment_name)
-            print (prev_likelihood, likelihood)
+            if (likelihood == 'final'): #No tokens survived error
+                print('Did not perform segm alignment on ',wav_id, ': No tokens survived')
+                break
+            likelihood = float(likelihood)
             if (prev_likelihood>likelihood):
+                make_mlf(segment_name, [])
                 continue
             while (likelihood>prev_likelihood):
                 prev_likelihood = likelihood
                 l2 += 1
                 lyric_segment = lyrics[l1:l2]
                 make_mlf(segment_name, lyric_segment)
-                likelihood = get_likelihood(segment_name)
+                likelihood = float(get_likelihood(segment_name))
             lyric_segment = lyrics[l1:l2-1]
             make_mlf(segment_name, lyric_segment)
             l1 = l2-1
+        print("name: ", wav_id," Length of lyrics ",len(lyrics)," End of lyric line in last segment ", l2)          
 
 
 if __name__ == "__main__":
