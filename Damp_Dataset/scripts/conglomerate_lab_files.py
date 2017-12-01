@@ -53,7 +53,7 @@ for name in line_dict.keys():
     i = 0
     while i < len(line_dict[name]):
         start, end, lyric = line_dict[name][i]
-        if lyric == 'pau':
+        if lyric == 'pau' and i!=len(line_dict[name])-1:
             while lyric == 'pau':
                 i += 1
                 _, _, lyric = line_dict[name][i]
