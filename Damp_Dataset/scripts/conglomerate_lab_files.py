@@ -50,8 +50,9 @@ for name in name_dict.keys():
 for name in line_dict.keys():
     print('writing %s'%(op.join(args.out_dir, name + '.lab')))
     outfile = open(op.join(args.out_dir, name + '.lab'), 'w')
+    line_dict[name].append(('_', '_', 'end'))
     i = 0
-    while i < len(line_dict[name]):
+    while i < len(line_dict[name]) - 1:
         start, end, lyric = line_dict[name][i]
         if lyric == 'pau' and i!=len(line_dict[name])-1:
             while lyric == 'pau':
@@ -62,5 +63,4 @@ for name in line_dict.keys():
         outfile.write('{} {} {}\n'.format(int(start), int(end), lyric))
         i += 1
     outfile.close()
-
 
