@@ -11,26 +11,24 @@ import os, sys
 import os.path as op
 import pdb
 
-lab_file_path = '/Users/RupakVignesh/Desktop/fall16/7100/Lyrics-to-Audio-Alignment/Damp_Dataset/test_lab_word_damp_model/'
-msaf_segments_path = '/Users/RupakVignesh/Desktop/fall16/7100/Lyrics-to-Audio-Alignment/Damp_Dataset/Audio_test_segmentation/'
+lab_file_path = '/Users/RupakVignesh/Desktop/fall16/7100/Lyrics-to-Audio-Alignment/Damp_Dataset/train_lab_word_damp_model/'
+msaf_segments_path = '/Users/RupakVignesh/Desktop/fall16/7100/Lyrics-to-Audio-Alignment/Damp_Dataset/Audio_train_segmentation/'
 
-def make_mlf(wav_segment_name,lyric_lines):
+def make_mlf(wav_segment_name, words):
     """
     Write word by word in a MLF file.
     """
-    words = [str.split(i) for i in lyric_lines]
-    words = [j for i in range(len(words)) for j in words[i]]
-    for i in range(len(words)):
-        words[i] = ''.join(e for e in words[i] if e.isalpha())
-    F = open('Audio_test_segmentation/'+wav_segment_name+'.mlf','w')
+    F = open(msaf_segments_path+wav_segment_name[:-4]+'.mlf','w')
     F.write('#!MLF!#\n')
-    F.write('"*/'+wav_segment_name+'.lab"\n')
-    F.write("pau\n")
+    F.write('"*/'+wav_segment_name[:-4]+'.lab"\n')
     for i in range(len(words)):
         F.write(words[i]+'\n')
-        F.write("pau\n")
     F.write(".\n")
     F.close()
+
+def find_nearest_word(array,value):
+    idx = (np.abs(array-value)).argmin()
+    return idx
 
 def get_boundaries_id(wav_id):
     """
@@ -38,6 +36,10 @@ def get_boundaries_id(wav_id):
     output a list of time stamps corresponding to msaf segments.
     """
     segment_list = [wav_seg for wav_seg in os.listdir(msaf_segments_path) if (wav_seg.startswith(wav_id) and wav_seg.endswith('wav'))]
+    #Sort segment list according to the segment number (the number after clip-)
+    seg_num = [ int(str.split(list_str,'-')[2]) for list_str in segment_list ]
+    arg_sorted = sorted(range(len(seg_num)), key=lambda k: seg_num[k])
+    segment_list = [segment_list[i] for i in arg_sorted]
     boundaries_id = []
     for i in segment_list:
         [fs,x] = wavfile.read(msaf_segments_path+i)
@@ -45,9 +47,7 @@ def get_boundaries_id(wav_id):
         boundaries_id.append(dur)
 
     boundaries_id = np.cumsum(boundaries_id)
-    return boundaries_id
-
-
+    return (segment_list, boundaries_id)
 
 def main():
     #Read labfile list
@@ -56,24 +56,30 @@ def main():
     F.close()
 
     for i in range(len(labfile_list)):
+        print (i, labfile_list[i])
         with open(lab_file_path + labfile_list[i], 'r') as F:
             lablines = [ str.split(lines.strip()) for lines in F]
         F.close()
+        lab_word_boundaries = []
+        lab_words = []
         for j in range(len(lablines)):
             #Convert from 100ns to seconds
-            lablines[j][0] = float(lablines[j][0])/(10**7)
-            lablines[j][1] = float(lablines[j][1])/(10**7)
+            lab_word_boundaries.append(float(lablines[j][1])/(10**7))
+            lab_words.append(lablines[j][2])
 
         #Get msaf boundaries for each file in list
         wav_id = op.splitext(labfile_list[i])
-        boundaries_id = get_boundaries_id(wav_id)
-        pdb.set_trace()
-    #Approximate to lab file time stamp
+        [segment_list, boundaries_id] = get_boundaries_id(wav_id)
 
-
-    #Get lyric segments within msaf boundaries
-
-    #Make mlf
+        prev_word_idx = 0
+        for bound_idx in range(len(boundaries_id)):
+            #Approximate to lab file time stamp
+            word_idx = find_nearest_word(lab_word_boundaries, boundaries_id[bound_idx]) #Computes nearest word boundary to msaf boundary
+            #Get lyric segments within msaf boundaries
+            lyric_seg = lab_words[prev_word_idx:word_idx+1]
+            prev_word_idx = word_idx
+            #Make mlf
+            make_mlf(segment_list[bound_idx], lyric_seg)
 
 
 
