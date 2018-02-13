@@ -41,11 +41,17 @@ python scripts/msaf_to_mlf.py <labfile_list>
 * Perform embedded reestimation within these segments to get the final phoneme models
 
 ## Testing
-* To test any model do the forced Viterbi alignment
+* To test any model do the forced Viterbi alignment initially
 ```
 sh scripts/force_align.sh
 ``` 
-Set the parameters such as model, features, mlf, dictionary, etc inside the file
+Set the parameters such as model, features, mlf, dictionary, etc inside the file.
+
+* To evaluate the performance of the model, use the manually annotated groundtruth and compute overlap.
+```
+python scripts/lab_to_lrc.py <lyrics_list>
+```
+Set the groundtruth and output folder inside the script.
 
 ## Authors
 
