@@ -1,3 +1,4 @@
 *.wav
 *.lab
 *.pyc
+*.DS_Store
