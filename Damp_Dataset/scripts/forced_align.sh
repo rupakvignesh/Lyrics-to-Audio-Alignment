@@ -1,1 +1,8 @@
-HVite -l output_lab_word_trainset -C Configs/config-hvite -a -H timit_model/hmmdefs -y lab -o SM -I train_lyrics.mlf -S lists/train_rest.mfclist words_to_phone_dict lists/cmu_phones.txt
+$OUTDIR = test_lab_word_timit_model
+$MODEL = timit_4s_4m/hmmdefs
+$MLF = test_lyrics.mlf
+$FEATS = lists/test.mfclist
+$DICT = words_to_phone_dict
+$PHONELIST = lists/cmu_phones.txt
+
+HVite -l $OUTDIR -C Configs/config-hvite -a -H $MODEL -y lab -o MN -I $MLF -S $FEATS $DICT $PHONELIST
